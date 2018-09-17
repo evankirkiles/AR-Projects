@@ -74,7 +74,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         // Check if basket has been placed
         if (!basketPlaced) {
-            basketPlaced = true
 
             // Anchor nonplaced hoop
             hoopNode?.geometry?.firstMaterial?.transparency = 1
@@ -87,7 +86,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
             hoopNode?.addChildNode(Nodes.getBasketDetectionNode())
             
             hoopNode?.addChildNode(Nodes.createGround())
-            hoopNode?.addChildNode(Nodes.getDistanceDisplayNode())  
+            hoopNode?.addChildNode(Nodes.getDistanceDisplayNode())
+            basketPlaced = true
         }
         
         // Get the start location of the swipe
@@ -101,7 +101,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        beingTouched = false
         var speed: Float?
         var isSwipe = false
         // Check if the touch IS a swipe, and get its distance and speed
@@ -126,12 +125,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
             if power > 1.5 { power = 1.5 }
             shootBasketball(power: power)
         }
+        beingTouched = false
     }
     
     func shootBasketball(power: Float) {
         // Shoot the basketball in the direction of the camera
-        holdingBasketball = false
-        thrownBasketball = true
         let frame = self.sceneView.session.currentFrame
         let mat = SCNMatrix4((frame?.camera.transform)!)
         let dir = SCNVector3(-1 * mat.m31, -1 * (mat.m32 - 1), -1 * mat.m33)
@@ -144,6 +142,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
         basketball!.physicsBody?.isAffectedByGravity = true
         basketball!.physicsBody?.mass = CGFloat(power)
         basketball!.physicsBody?.applyForce(dir, asImpulse: true)
+        
+        holdingBasketball = false
+        thrownBasketball = true
         
         // Delete the basketball 3 seconds after shooting it
         Timer.scheduledTimer(withTimeInterval: 3, repeats: false, block: { (Timer) in
@@ -159,10 +160,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
 
     func holdBasketball() {
         // Create a basketball in front of the camera
-        holdingBasketball = true
-        basketball = SCNScene(named: "art.scnassets/basketball.dae")?.rootNode.childNode(withName: "ball", recursively: true)
+        basketball = SCNScene(named: "art.scnassets/basketball.dae")?.rootNode.childNode(withName: "Basketball", recursively: true)
         basketball?.position = SCNVector3(0, -0.1, -0.5)
         sceneView.pointOfView?.addChildNode(basketball!)
+        holdingBasketball = true
     }
     
     // Update function, called every (timeInterval)
@@ -185,7 +186,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
                 let displayText = SCNText.init(string: (NSString(format: "%.2f", getDistanceBetween(firstNode: basketball!, secondNode: hoopNode!)) as String) + "m", extrusionDepth: 0)
                 displayText.font = UIFont(name: "AvenirNext-Medium", size: 60)
                 let textcolor = SCNMaterial()
-                textcolor.diffuse.contents = UIColor.black
+                textcolor.diffuse.contents = UIColor.white
                 displayText.materials = [textcolor]
                 
                 let textnode = hoopNode?.childNode(withName: "distancenode", recursively: true)!.childNode(withName: "distancetext", recursively: true)!
