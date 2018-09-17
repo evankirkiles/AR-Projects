@@ -30,6 +30,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
     var basketPlaced = false
     var holdingBasketball = false
     var thrownBasketball = false
+    var deleteBasketball = false
 
     var passedThroughTopPlane = false
     var basketScored = false
@@ -148,13 +149,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
         
         // Delete the basketball 3 seconds after shooting it
         Timer.scheduledTimer(withTimeInterval: 3, repeats: false, block: { (Timer) in
-            self.basketball?.removeFromParentNode()
-            self.basketScored = false
-            self.basketball = nil
-            self.thrownBasketball = false
-            self.passedThroughTopPlane = false
-            
-            self.holdBasketball()
+            self.deleteBasketball = true
         })
     }
 
@@ -168,6 +163,17 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
     
     // Update function, called every (timeInterval)
     func renderer(_ renderer: SCNSceneRenderer, updateAtTime time: TimeInterval) {
+        // First delete the basketball if necessary
+        if deleteBasketball {
+            basketScored = false
+            basketball = nil
+            thrownBasketball = false
+            passedThroughTopPlane = false
+            basketball?.removeFromParentNode()
+            holdBasketball()
+            deleteBasketball = false
+        }
+        
         if !basketPlaced {
             // Make nonplaced hoop 2 metres in front of camera
             let camDistance = getSceneSpacePosition(inFrontOf: sceneView.pointOfView!, atDistance: 1.5)
